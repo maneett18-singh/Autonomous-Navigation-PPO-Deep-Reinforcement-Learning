@@ -22,8 +22,8 @@ The resulting policy learns when to accelerate, brake, and rotate to successfull
 ---
 
 ## 📺 Demonstration
-
-<video src="docs/videos/parcour_demo.mp4" width="700" controls>
+https://github.com/user-attachments/assets/23f1a1ac-5230-453e-afb2-2906d766103f
+<video src="https://github.com/user-attachments/assets/23f1a1ac-5230-453e-afb2-2906d766103f" width="700" controls>
 Your browser does not support the video tag.
 </video>
 
