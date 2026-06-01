@@ -83,20 +83,18 @@ The project uses **Proximal Policy Optimization (PPO)**, an Actor-Critic policy-
 ### Policy Network (Actor)
 
 Learns a policy:
-
-[
+$$
 \pi_{\theta}(a|s)
-]
+$$
 
 that maps observations to continuous acceleration commands.
 
 ### Value Network (Critic)
 
 Estimates:
-
-[
+$$
 V_{\phi}(s)
-]
+$$
 
 which serves as a baseline during policy optimization.
 
@@ -107,33 +105,23 @@ Both networks are implemented as multilayer perceptrons (MLPs) with **Tanh** act
 ## PPO Clipped Objective
 
 To prevent unstable policy updates, PPO optimizes the clipped surrogate objective:
+$$
+r_t(\theta)=\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}
+$$
 
-[
-r_t(\theta)
-===========
-
-\frac{\pi_\theta(a_t|s_t)}
-{\pi_{\theta_{old}}(a_t|s_t)}
-]
-
-[
-L^{CLIP}(\theta)
-================
-
-\hat{\mathbb E}_t
-\left[
-\min
-\left(
+$$
+L^{CLIP}(\theta)=\hat{\mathbb{E}}_t\left[
+\min\left(
 r_t(\theta)\hat A_t,
-\text{clip}(r_t(\theta),1-\epsilon,1+\epsilon)\hat A_t
+	ext{clip}(r_t(\theta),1-\epsilon,1+\epsilon)\hat A_t
 \right)
 \right]
-]
+$$
 
 where:
 
-* (\hat A_t) is the Generalized Advantage Estimate (GAE)
-* (\epsilon) defines the clipping threshold
+* $\hat A_t$ is the Generalized Advantage Estimate (GAE)
+* $\epsilon$ defines the clipping threshold
 
 The overall optimization objective combines:
 
@@ -152,20 +140,13 @@ The agent controls a non-holonomic vehicle moving through a sequence of gates on
 ### Stochastic Control Noise
 
 To simulate real-world uncertainty, Gaussian noise is added to acceleration commands:
+$$
+\sigma_{trans}=\frac{a_{limit}}{5}
+$$
 
-[
-\sigma_{trans}
-==============
-
-\frac{a_{limit}}{5}
-]
-
-[
-\sigma_{rot}
-============
-
-\frac{\alpha_{limit}}{5}
-]
+$$
+\sigma_{rot}=\frac{\alpha_{limit}}{5}
+$$
 
 This encourages the policy to learn robust driving behavior.
 
@@ -174,24 +155,14 @@ This encourages the policy to learn robust driving behavior.
 ## Velocity-Dependent Steering Constraints
 
 The maximum rotational velocity decreases as forward velocity increases:
-
-[
-v_{rot,limit}
-=============
-
-V_{rot,max}
-\left(
-1-(1-k)
-\frac{|v_{trans}|}
-{V_{trans,max}}
-\right)
-]
+$$
+v_{rot,limit}=V_{rot,max}\left(1-(1-k)\frac{|v_{trans}|}{V_{trans,max}}\right)
+$$
 
 with:
-
-[
+$$
 k = 0.3
-]
+$$
 
 ### Consequence
 
@@ -204,30 +175,20 @@ The agent cannot make aggressive turns at high speed and must learn to brake bef
 Rather than providing global coordinates, observations are expressed relative to the next target gate.
 
 ## Observation Vector
-
-[
-s'
-==
-
-[
-dist,
-\sin(\phi),
-\cos(\phi),
-v,
-\omega
-]^T
-]
+$$
+s'=[dist,\sin(\phi),\cos(\phi),v,\omega]^T
+$$
 
 where:
 
 | Variable | Description            |
 | -------- | ---------------------- |
-| (dist)   | Distance to next gate  |
-| (\phi)   | Heading error          |
-| (v)      | Translational velocity |
-| (\omega) | Rotational velocity    |
+| $dist$   | Distance to next gate  |
+| $\phi$   | Heading error          |
+| $v$      | Translational velocity |
+| $\omega$ | Rotational velocity    |
 
-Using (\sin(\phi)) and (\cos(\phi)) removes angular discontinuities at ±π and improves learning stability.
+Using $\sin(\phi)$ and $\cos(\phi)$ removes angular discontinuities at $\pm\pi$ and improves learning stability.
 
 ---
 
@@ -236,50 +197,28 @@ Using (\sin(\phi)) and (\cos(\phi)) removes angular discontinuities at ±π and 
 The policy outputs two continuous control signals:
 
 ## Translational Acceleration
-
-[
-a_{trans}
-\in
-[-0.5,;0.5]
-\quad m/s^2
-]
+$$
+a_{trans}\in[-0.5,0.5]\ \mathrm{m/s^2}
+$$
 
 ## Rotational Acceleration
-
-[
-a_{rot}
-\in
-[-0.2,;0.2]
-\quad rad/s^2
-]
+$$
+a_{rot}\in[-0.2,0.2]\ \mathrm{rad/s^2}
+$$
 
 Vehicle states are propagated using Euler integration with:
-
-[
-\Delta T = 0.2s
-]
+$$
+\Delta T = 0.2\,s
+$$
 
 ---
 
 # 🎯 Reward Function
 
 A dense reward function is used to accelerate learning:
-
-[
-r_t
-===
-
-r_{gate}
-+
-w_{dist}(d_{t-1}-d_t)
-+
-w_{align}(v\cos\phi)
---------------------
-
-## w_{time}
-
-\mathcal P
-]
+$$
+r_t=r_{gate}+w_{dist}(d_{t-1}-d_t)+w_{align}(v\cos\phi)-w_{time}\,\mathcal{P}
+$$
 
 ### Reward Components
 
